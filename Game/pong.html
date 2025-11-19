@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pong Game</title>
+<style>
+body {
+  margin: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: sans-serif;
+  color: #fff;
+}
+canvas { background: #111; display: block; margin-bottom: 10px; touch-action:none; }
+#timer { font-size:1.2em; margin-bottom:5px; }
+#scoreboard { font-size: 1.2em; margin-bottom: 10px; }
+#durationSelect { margin-bottom:10px; padding:5px; font-size:1em; }
+button {
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  background: #444;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+}
+button:hover { background: #666; }
+#overlay {
+  position: absolute;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background: rgba(0,0,0,0.7);
+  z-index:10;
+  text-align:center;
+}
+#winnerText {
+  font-size:1.5em;
+  margin-bottom:15px;
+  color:yellow;
+}
+</style>
+</head>
+<body>
+
+<div id="timer">Time: 0s</div>
+<div id="scoreboard">Player 1: 0 | Player 2: 0</div>
+<canvas id="game" width="400" height="400"></canvas>
+
+<div id="overlay">
+  <select id="durationSelect">
+    <option value="5">5 detik</option>
+    <option value="10" selected>10 detik</option>
+    <option value="15">15 detik</option>
+    <option value="20">20 detik</option>
+    <option value="30">30 detik</option>
+  </select>
+  <button id="playBtn">Play</button>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scoreboard = document.getElementById('scoreboard');
+const timerDiv = document.getElementById('timer');
+const overlay = document.getElementById('overlay');
+const playBtn = document.getElementById('playBtn');
+
+let paddle1, paddle2, ball, score1, score2, gameInterval, startTime, maxDuration;
+
+function updateScore() {
+  scoreboard.textContent = `Player 1: ${score1} | Player 2: ${score2}`;
+}
+
+function updateTimer() {
+  const elapsed = Math.floor((Date.now() - startTime)/1000);
+  timerDiv.textContent = `Time: ${elapsed}s`;
+}
+
+function startGame() {
+  const durationSelect = document.getElementById('durationSelect');
+  maxDuration = parseInt(durationSelect.value) * 1000; // ms
+
+  paddle1 = { x: 10, y: canvas.height/2 - 40, w: 10, h: 80, dy: 0 };
+  paddle2 = { x: canvas.width - 20, y: canvas.height/2 - 40, w: 10, h: 80, dy: 0 };
+  ball = { x: canvas.width/2 -5, y: canvas.height/2 -5, w:10, h:10, vx:3, vy:3 };
+  score1 = 0; score2 = 0;
+  overlay.style.display = 'none';
+  startTime = Date.now();
+  updateScore();
+  updateTimer();
+  if(gameInterval) clearInterval(gameInterval);
+  gameInterval = setInterval(loop, 20);
+}
+
+function gameOver() {
+  clearInterval(gameInterval);
+  const winner = score1 > score2 ? 'Player 1' : score2 > score1 ? 'Player 2' : 'Draw';
+  overlay.innerHTML = `
+    ${winner !== 'Draw' ? `<div id="winnerText">Congrats ${winner}!</div>` : `<div id="winnerText">Draw!</div>`}
+    <button onclick="window.location.href='homegame.html'">Back</button>
+    <button id="playAgain">Play Again</button>
+  `;
+  overlay.style.display = 'flex';
+
+  document.getElementById('playAgain').addEventListener('click', ()=>{
+    overlay.innerHTML = `
+      <select id="durationSelect">
+        <option value="5">5 detik</option>
+        <option value="10" selected>10 detik</option>
+        <option value="15">15 detik</option>
+        <option value="20">20 detik</option>
+        <option value="30">30 detik</option>
+      </select>
+      <button id="playBtn">Play</button>
+    `;
+    overlay.style.display = 'flex';
+    document.getElementById('playBtn').addEventListener('click', startGame);
+  });
+}
+
+function loop() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Update timer
+  updateTimer();
+
+  // Cek durasi maksimal
+  if(Date.now() - startTime >= maxDuration){
+    gameOver();
+    return;
+  }
+
+  // Update paddles
+  paddle1.y += paddle1.dy;
+  paddle2.y += paddle2.dy;
+  if(paddle1.y < 0) paddle1.y = 0;
+  if(paddle1.y + paddle1.h > canvas.height) paddle1.y = canvas.height - paddle1.h;
+  if(paddle2.y < 0) paddle2.y = 0;
+  if(paddle2.y + paddle2.h > canvas.height) paddle2.y = canvas.height - paddle2.h;
+
+  // Update ball
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // Collisions with top/bottom
+  if(ball.y < 0 || ball.y + ball.h > canvas.height) ball.vy *= -1;
+
+  // Collisions with paddles
+  if(ball.x < paddle1.x + paddle1.w && ball.x > paddle1.x && ball.y + ball.h > paddle1.y && ball.y < paddle1.y + paddle1.h) ball.vx *= -1;
+  if(ball.x + ball.w > paddle2.x && ball.x + ball.w < paddle2.x + paddle2.w && ball.y + ball.h > paddle2.y && ball.y < paddle2.y + paddle2.h) ball.vx *= -1;
+
+  // Score
+  if(ball.x < 0){ score2++; resetBall(); }
+  if(ball.x + ball.w > canvas.width){ score1++; resetBall(); }
+  updateScore();
+
+  // Draw paddles
+  ctx.fillStyle = 'white';
+  ctx.fillRect(paddle1.x,paddle1.y,paddle1.w,paddle1.h);
+  ctx.fillRect(paddle2.x,paddle2.y,paddle2.w,paddle2.h);
+
+  // Draw ball
+  ctx.fillRect(ball.x, ball.y, ball.w, ball.h);
+}
+
+function resetBall() {
+  ball.x = canvas.width/2 - 5;
+  ball.y = canvas.height/2 - 5;
+  ball.vx = (Math.random()>0.5?1:-1)*3;
+  ball.vy = (Math.random()>0.5?1:-1)*3;
+}
+
+// Controls PC
+document.addEventListener('keydown', e => {
+  if(e.key === 'w') paddle1.dy = -6;
+  if(e.key === 's') paddle1.dy = 6;
+  if(e.key === 'ArrowUp') paddle2.dy = -6;
+  if(e.key === 'ArrowDown') paddle2.dy = 6;
+});
+document.addEventListener('keyup', e => {
+  if(e.key === 'w' || e.key === 's') paddle1.dy = 0;
+  if(e.key === 'ArrowUp' || e.key === 'ArrowDown') paddle2.dy = 0;
+});
+
+// Touch controls for mobile
+canvas.addEventListener('touchmove', e=>{
+  for(let i=0;i<e.touches.length;i++){
+    const touch = e.touches[i];
+    if(touch.clientX < canvas.width/2) paddle1.y = touch.clientY - paddle1.h/2;
+    else paddle2.y = touch.clientY - paddle2.h/2;
+  }
+}, {passive:true});
+
+playBtn.addEventListener('click', startGame);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Game</title>
+<style>
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background: #000;
+  font-family: sans-serif;
+  color: #fff;
+}
+canvas {
+  background: #111;
+  display: block;
+  touch-action: none;
+  margin-bottom: 10px;
+}
+#scoreboard {
+  margin: 10px;
+  font-size: 1.2em;
+}
+button {
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+  background: #444;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+}
+button:hover {
+  background: #666;
+}
+#overlay {
+  position: absolute;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.8);
+  z-index:10;
+}
+</style>
+</head>
+<body>
+
+<div id="scoreboard">Score: 0 | High Score: 0</div>
+<canvas id="game" width="400" height="400"></canvas>
+
+<div id="overlay">
+  <button id="playBtn">Play</button>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const grid = 20;
+let snake, dx, dy, food, score, highScore;
+let gameInterval;
+
+const scoreboard = document.getElementById('scoreboard');
+const overlay = document.getElementById('overlay');
+const playBtn = document.getElementById('playBtn');
+
+highScore = localStorage.getItem('snakeHighScore') || 0;
+
+function updateScore() {
+  scoreboard.textContent = `Score: ${score} | High Score: ${highScore}`;
+}
+
+function getRandomFood() {
+  return {
+    x: Math.floor(Math.random() * canvas.width / grid) * grid,
+    y: Math.floor(Math.random() * canvas.height / grid) * grid
+  };
+}
+
+function startGame() {
+  snake = [{x: 160, y: 160}];
+  dx = grid;
+  dy = 0;
+  food = getRandomFood();
+  score = 0;
+  updateScore();
+  overlay.style.display = 'none';
+  if(gameInterval) clearInterval(gameInterval);
+  gameInterval = setInterval(loop, 200); // lebih lambat
+}
+
+function gameOver() {
+  if(score > highScore){
+    highScore = score;
+    localStorage.setItem('snakeHighScore', highScore);
+  }
+  updateScore();
+  clearInterval(gameInterval);
+  
+  overlay.innerHTML = `
+    <button onclick="window.location.href='homegame.html'">Back</button>
+    <button id="playAgain">Play Again</button>
+  `;
+  overlay.style.display = 'flex';
+  
+  document.getElementById('playAgain').addEventListener('click', ()=>{
+    overlay.innerHTML = `<button id="playBtn">Play</button>`;
+    overlay.style.display = 'flex';
+    document.getElementById('playBtn').addEventListener('click', startGame);
+  });
+}
+
+function loop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Gerak ular
+  snake.unshift({x: snake[0].x + dx, y: snake[0].y + dy});
+  
+  // Makan makanan
+  if (snake[0].x === food.x && snake[0].y === food.y) {
+    food = getRandomFood();
+    score++;
+    if(score > highScore) highScore = score;
+    updateScore();
+  } else {
+    snake.pop();
+  }
+  
+  // Gambar makanan
+  ctx.fillStyle = 'red';
+  ctx.fillRect(food.x, food.y, grid-1, grid-1);
+  
+  // Gambar ular
+  ctx.fillStyle = 'lime';
+  snake.forEach(seg => ctx.fillRect(seg.x, seg.y, grid-1, grid-1));
+  
+  // Cek tabrakan
+  if (
+    snake[0].x < 0 || snake[0].x >= canvas.width ||
+    snake[0].y < 0 || snake[0].y >= canvas.height ||
+    snake.slice(1).some(seg => seg.x === snake[0].x && seg.y === snake[0].y)
+  ) {
+    gameOver();
+  }
+}
+
+// Keyboard controls
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft' && dx === 0) { dx = -grid; dy = 0; }
+  if (e.key === 'ArrowRight' && dx === 0) { dx = grid; dy = 0; }
+  if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -grid; }
+  if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = grid; }
+});
+
+// Touch controls for mobile
+let startX, startY;
+canvas.addEventListener('touchstart', e => {
+  const touch = e.touches[0];
+  startX = touch.clientX;
+  startY = touch.clientY;
+}, {passive:true});
+
+canvas.addEventListener('touchend', e => {
+  const touch = e.changedTouches[0];
+  const dxSwipe = touch.clientX - startX;
+  const dySwipe = touch.clientY - startY;
+  if(Math.abs(dxSwipe) > Math.abs(dySwipe)){
+    if(dxSwipe > 0 && dx === 0) { dx = grid; dy = 0; }
+    if(dxSwipe < 0 && dx === 0) { dx = -grid; dy = 0; }
+  } else {
+    if(dySwipe > 0 && dy === 0) { dx = 0; dy = grid; }
+    if(dySwipe < 0 && dy === 0) { dx = 0; dy = -grid; }
+  }
+}, {passive:true});
+
+// Start button
+playBtn.addEventListener('click', startGame);
+
+updateScore();
+</script>
+
+</body>
+</html>

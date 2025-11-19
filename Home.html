@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Void Cracker - Cyberpunk</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+  <style>
+    body {
+      background: radial-gradient(circle at top left, #2a004f, #0a0016 60%);
+      color: #e5dbff;
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* NAVBAR */
+    .navbar { background: rgba(30, 0, 60, 0.7); backdrop-filter: blur(8px); }
+    .navbar-brand { color: #d5b3ff !important; font-weight: 700; text-shadow: 0 0 8px #a66bff; }
+
+    /* SIDEBAR */
+    .sidebar { height: 100vh; background: rgba(20, 0, 35, 0.7); backdrop-filter: blur(8px); border-right: 1px solid #3a0066; padding-top: 20px; }
+    .nav-link { color: #d8c6ff; border-radius: 12px; padding: 10px 15px; margin-bottom: 5px; transition: 0.25s; font-weight: 500; }
+    .nav-link:hover { background: #5a0099; color: #fff !important; box-shadow: 0 0 12px #9d4dff, 0 0 24px #7f39fb; }
+    .active { background: #7c00db !important; color: #fff !important; box-shadow: 0 0 12px #c77dff; }
+
+    /* CARD */
+    .card { background: rgba(25, 0, 45, 0.7); border: 1px solid #3a0066; border-radius: 20px; backdrop-filter: blur(6px); box-shadow: 0 0 20px #42007a; }
+
+    /* BUTTON */
+    .btn-primary { background: linear-gradient(90deg, #9f3dff, #d680ff); border: none; border-radius: 50px; font-weight: 600; box-shadow: 0 0 16px #b56dff; transition: 0.25s; }
+    .btn-primary:hover { box-shadow: 0 0 25px #e3b0ff, 0 0 45px #c07eff; transform: scale(1.05); }
+
+    /* PARTICLES */
+    #particles { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; overflow: hidden; z-index: 2; }
+    .particle { position: absolute; width: 4px; height: 4px; background: #bf5bff; box-shadow: 0 0 8px #bf5bff, 0 0 16px #e3b0ff; border-radius: 50%; animation: fly 0.7s linear infinite; opacity: 0.9; }
+    @keyframes fly { from { transform: translateY(100vh); } to { transform: translateY(-10vh); } }
+
+    /* SCREEN GLOW */
+    body::after { content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(180,0,255,0.12), transparent 70%); animation: pulse 1s infinite; pointer-events: none; z-index: 1; }
+    @keyframes pulse { 0%,100% { opacity:0.4; } 50% { opacity:0.8; } }
+
+    /* CURSOR TRAIL */
+    .trail { position: fixed; width: 18px; height: 18px; background: #d971ff; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); box-shadow: 0 0 12px #e3b0ff, 0 0 28px #b56dff; animation: fade 0.4s linear forwards; z-index: 9999; }
+    @keyframes fade { from { opacity:1; transform:scale(1);} to {opacity:0; transform:scale(0);} }
+
+    /* WARP TRANSITION */
+    #warp-overlay { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:99999; background: radial-gradient(circle, rgba(200,0,255,0.2), rgba(0,0,0,0.9)); transform:scale(0); opacity:0; transition:0.6s ease; }
+    body.warp-start #warp-overlay { transform:scale(3); opacity:1; }
+    body.warp-end #warp-overlay { animation: warpEnter 0.6s forwards; }
+    @keyframes warpEnter { 0%{opacity:1; transform:scale(3);} 100%{opacity:0; transform:scale(0);} }
+  </style>
+</head>
+<body>
+
+<nav class="navbar px-3">
+  <a class="navbar-brand"><img src="images/channels4_profile.jpg" width="30" height="30" class="rounded-circle border border-info me-2"> VOID CRACKER</a>
+</nav>
+
+<div id="warp-overlay"></div>
+<div id="particles"></div>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-3 sidebar">
+      <ul class="nav flex-column">
+        <li class="nav-item"><a class="nav-link active" onclick="warpTo('Home.html')"><i class="bi bi-house-door-fill"></i> Home</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="warpTo('Game/homegame.html')"><i class="bi bi-controller"></i> Game</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="warpTo('sosmed.html')"><i class="bi bi-phone"></i> Sosial Media</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="warpTo('aboutme.html')"><i class="bi bi-person"></i> Tentang Saya</a></li>
+      </ul>
+    </div>
+
+    <div class="col-9 p-4">
+      <div class="card p-4">
+        <h2>🚀 Welcome to Void Cyber Station</h2>
+        <p>Enter the game now</p>
+        <a onclick="warpTo('Game/homegame.html')" class="btn btn-primary mt-2">Start</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SFX3 Bass Warp -->
+<audio id="warp-sound" src="https://files.catbox.moe/qfh7ut.mp3"></audio>
+
+<script>
+function createParticle(){ const p=document.createElement("div"); p.classList.add("particle"); p.style.left=Math.random()*window.innerWidth+"px"; document.getElementById("particles").appendChild(p); setTimeout(()=>p.remove(),900);}
+setInterval(createParticle,45);
+
+document.addEventListener("mousemove",e=>{const t=document.createElement("div");t.classList.add("trail");t.style.left=e.clientX+"px";t.style.top=e.clientY+"px";document.body.appendChild(t);setTimeout(()=>t.remove(),400);});
+
+/* WARP + SFX */
+function warpTo(url){
+  document.getElementById("warp-sound").volume = 0.45;
+  document.getElementById("warp-sound").play();
+  document.body.classList.add("warp-start");
+  setTimeout(()=>{ window.location.href=url; }, 450);
+}
+window.onload = () => { document.body.classList.add("warp-end"); };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tic Tac Toe - Void</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#06b6d4;
+      --accent-2:#f97316;
+      --muted:#94a3b8;
+      --win: #16a34a;
+      --lose: #ef4444;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,#071024 0%, #071430 100%);
+      color:#e6eef6;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      font-size:16px;
+    }
+
+    .container{
+      width:100%;
+      max-width:720px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;
+      padding:18px;
+      box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    h1{
+      margin:0;
+      font-size:20px;
+      letter-spacing:0.4px;
+    }
+    .controls{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .btn{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.07);
+      color:inherit;
+      padding:8px 10px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      transition:transform .12s ease, background .12s;
+    }
+    .btn:hover{ transform:translateY(-2px); background:rgba(255,255,255,0.02) }
+    .btn.primary{
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      border:none;
+      color:#02121a;
+      box-shadow:0 6px 18px rgba(3,105,115,0.12);
+    }
+
+    .meta{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:10px;
+    }
+
+    .board-wrap{
+      display:grid;
+      grid-template-columns:1fr 220px;
+      gap:16px;
+    }
+
+    /* Board */
+    .board{
+      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+      padding:12px;
+      border-radius:10px;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:8px;
+      align-items:stretch;
+    }
+    .cell{
+      background:rgba(255,255,255,0.03);
+      border-radius:8px;
+      aspect-ratio:1 / 1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:48px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .08s ease, background .12s, box-shadow .12s;
+      user-select:none;
+    }
+    .cell:hover{ transform:translateY(-4px) scale(1.02) }
+    .cell.disabled{ cursor:default; opacity:0.9; transform:none }
+    .cell.x{ color:var(--accent); }
+    .cell.o{ color:var(--accent-2); }
+
+    .cell.win{
+      box-shadow:0 6px 18px rgba(22,163,74,0.12);
+      background:linear-gradient(180deg, rgba(22,163,74,0.06), rgba(22,163,74,0.02));
+    }
+
+    /* Sidebar */
+    .side{
+      background:rgba(255,255,255,0.02);
+      border-radius:10px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-width:200px;
+    }
+    .status{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .status .line{ font-size:14px; color:var(--muted) }
+    .status .big{
+      font-weight:700;
+      font-size:18px;
+    }
+    .scoreboard{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .score-item{
+      background:rgba(255,255,255,0.02);
+      padding:10px;
+      border-radius:8px;
+      width:100%;
+      text-align:center;
+    }
+    .small{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    footer{
+      margin-top:14px;
+      font-size:13px;
+      color:var(--muted);
+      text-align:right;
+    }
+
+    /* Responsive */
+    @media (max-width:720px){
+      .board-wrap{
+        grid-template-columns: 1fr;
+      }
+      .side{ min-width:unset }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="application" aria-label="Tic Tac Toe">
+    <header>
+      <h1>Tic Tac Toe</h1>
+      <div class="controls">
+        <button id="resetBtn" class="btn">Reset</button>
+        <button id="newGameBtn" class="btn primary">Mulai Baru</button>
+      </div>
+    </header>
+
+    <div class="meta">
+      <div id="turnInfo">Giliran: <strong id="turnPlayer">X</strong></div>
+      <div style="flex:1"></div>
+      <div class="small">Klik kotak untuk menandai</div>
+    </div>
+
+    <div class="board-wrap">
+      <div id="board" class="board" role="grid" aria-label="Papan permainan">
+        <!-- 9 sel akan dibuat lewat JS -->
+      </div>
+
+      <aside class="side" aria-label="Informasi permainan">
+        <div class="status">
+          <div class="line small">Status</div>
+          <div id="statusMessage" class="big">Permainan dimulai — X giliran</div>
+        </div>
+
+        <div class="scoreboard" aria-label="Skor">
+          <div class="score-item">
+            <div class="small">X</div>
+            <div id="scoreX" style="font-weight:700">0</div>
+          </div>
+          <div class="score-item">
+            <div class="small">Seri</div>
+            <div id="scoreDraw" style="font-weight:700">0</div>
+          </div>
+          <div class="score-item">
+            <div class="small">O</div>
+            <div id="scoreO" style="font-weight:700">0</div>
+          </div>
+        </div>
+
+        <div>
+          <button id="autoPlayBtn" class="btn" title="Buat komputer main O (sederhana)">Toggle AI (O)</button>
+        </div>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="homegame.html">Kembali Ke Halaman Utama</a></li>
+          </ul>
+        </li>
+      </aside>
+    </div>
+
+    <footer>
+      Dibuat dengan ❤️ — Main sampai menang!
+    </footer>
+  </div>
+
+  <script>
+  (function(){
+    'use strict';
+
+    // Elemen
+    const boardEl = document.getElementById('board');
+    const turnInfoEl = document.getElementById('turnPlayer');
+    const statusEl = document.getElementById('statusMessage');
+    const resetBtn = document.getElementById('resetBtn');
+    const newGameBtn = document.getElementById('newGameBtn');
+    const scoreXEl = document.getElementById('scoreX');
+    const scoreOEl = document.getElementById('scoreO');
+    const scoreDrawEl = document.getElementById('scoreDraw');
+    const autoPlayBtn = document.getElementById('autoPlayBtn');
+
+    // State permainan
+    let boardState = Array(9).fill(null); // null | 'X' | 'O'
+    let currentPlayer = 'X';
+    let isGameActive = true;
+    let scores = { X: 0, O: 0, D: 0 };
+    let aiOn = false; // jika true, komputer main O (sangat sederhana, random best move)
+    const winningCombinations = [
+      [0,1,2],[3,4,5],[6,7,8], // baris
+      [0,3,6],[1,4,7],[2,5,8], // kolom
+      [0,4,8],[2,4,6]          // diagonal
+    ];
+
+    // Inisialisasi papan
+    function createBoard(){
+      boardEl.innerHTML = '';
+      for(let i=0;i<9;i++){
+        const cell = document.createElement('button');
+        cell.className = 'cell';
+        cell.setAttribute('data-index', i);
+        cell.setAttribute('aria-label', 'Kotak ' + (i+1));
+        cell.setAttribute('role','gridcell');
+        cell.addEventListener('click', onCellClick);
+        boardEl.appendChild(cell);
+      }
+    }
+
+    function updateUI(){
+      // update cells
+      const cells = boardEl.querySelectorAll('.cell');
+      cells.forEach(cell=>{
+        const idx = Number(cell.dataset.index);
+        const val = boardState[idx];
+        cell.textContent = val ? val : '';
+        cell.classList.remove('x','o','disabled','win');
+        if(val){
+          cell.classList.add(val.toLowerCase());
+          cell.classList.add('disabled');
+        } else {
+          cell.classList.remove('disabled');
+        }
+      });
+
+      // turn and status
+      turnInfoEl.textContent = currentPlayer;
+      if(!isGameActive){
+        // nothing extra here; specific message set from checkWin/draw
+      } else {
+        statusEl.textContent = `Permainan berlangsung — Giliran ${currentPlayer}`;
+      }
+
+      // score
+      scoreXEl.textContent = scores.X;
+      scoreOEl.textContent = scores.O;
+      scoreDrawEl.textContent = scores.D;
+    }
+
+    function onCellClick(e){
+      if(!isGameActive) return;
+      const idx = Number(e.currentTarget.dataset.index);
+      if(boardState[idx]) return; // sudah terisi
+      makeMove(idx, currentPlayer);
+    }
+
+    function makeMove(index, player){
+      if(!isGameActive) return;
+      if(boardState[index]) return;
+      boardState[index] = player;
+      // update UI fast
+      updateUI();
+
+      // check kemenangan
+      const winnerInfo = checkWinner();
+      if(winnerInfo){
+        isGameActive = false;
+        highlightWinningCells(winnerInfo.combo);
+        scores[winnerInfo.winner] += 1;
+        statusEl.textContent = `Pemenang: ${winnerInfo.winner} 🎉`;
+      } else if(boardState.every(cell => cell !== null)){
+        // seri
+        isGameActive = false;
+        scores.D += 1;
+        statusEl.textContent = `Permainan seri.`;
+      } else {
+        // pindah giliran
+        currentPlayer = player === 'X' ? 'O' : 'X';
+        statusEl.textContent = `Giliran: ${currentPlayer}`;
+        if(aiOn && currentPlayer === 'O'){
+          // jalankan AI sederhana sedikit delay supaya terasa natural
+          setTimeout(aiMove, 350);
+        }
+      }
+      updateUI();
+    }
+
+    // Cek pemenang — mengembalikan { winner: 'X'|'O', combo: [a,b,c] } atau null
+    function checkWinner(){
+      for(const combo of winningCombinations){
+        const [a,b,c] = combo;
+        const v = boardState[a];
+        if(v && v === boardState[b] && v === boardState[c]){
+          return { winner: v, combo };
+        }
+      }
+      return null;
+    }
+
+    function highlightWinningCells(combo){
+      combo.forEach(i=>{
+        const cell = boardEl.querySelector(`.cell[data-index="${i}"]`);
+        if(cell) cell.classList.add('win');
+      });
+    }
+
+    function resetRound(keepScores = true){
+      boardState = Array(9).fill(null);
+      currentPlayer = 'X';
+      isGameActive = true;
+      statusEl.textContent = `Permainan dimulai — Giliran ${currentPlayer}`;
+      if(!keepScores){
+        scores = { X:0, O:0, D:0 };
+      }
+      updateUI();
+    }
+
+    function newGame(){
+      resetRound(false);
+    }
+
+    // Tombol/toggle AI sederhana
+    autoPlayBtn.addEventListener('click', ()=>{
+      aiOn = !aiOn;
+      autoPlayBtn.textContent = aiOn ? 'AI Aktif: O' : 'Toggle AI (O)';
+      // jika AI diaktifkan dan giliran O langsung, panggil aiMove
+      if(aiOn && isGameActive && currentPlayer === 'O'){
+        setTimeout(aiMove, 300);
+      }
+    });
+
+    resetBtn.addEventListener('click', ()=> resetRound(true));
+    newGameBtn.addEventListener('click', ()=> newGame());
+
+    // AI sederhana: jika bisa menang => menang, jika tidak bisa blok => blok, else random
+    function aiMove(){
+      if(!isGameActive || currentPlayer !== 'O') return;
+      // cari langkah menang untuk O
+      const idxWin = findWinningMove('O');
+      if(idxWin !== -1){
+        makeMove(idxWin, 'O');
+        return;
+      }
+      // blokir X
+      const idxBlock = findWinningMove('X');
+      if(idxBlock !== -1){
+        makeMove(idxBlock, 'O');
+        return;
+      }
+      // ambil center jika kosong
+      if(boardState[4] === null){
+        makeMove(4,'O');
+        return;
+      }
+      // ambil sudut kosong
+      const corners = [0,2,6,8].filter(i=>boardState[i]===null);
+      if(corners.length){
+        makeMove(corners[Math.floor(Math.random()*corners.length)], 'O');
+        return;
+      }
+      // ambil sisi
+      const sides = [1,3,5,7].filter(i=>boardState[i]===null);
+      if(sides.length){
+        makeMove(sides[Math.floor(Math.random()*sides.length)], 'O');
+        return;
+      }
+    }
+
+    // cari index langkah yang membuat 'player' menang sekarang, -1 jika tidak ada
+    function findWinningMove(player){
+      for(const combo of winningCombinations){
+        const [a,b,c] = combo;
+        const vals = [boardState[a], boardState[b], boardState[c]];
+        const emptyIndices = combo.filter(i => boardState[i] === null);
+        if(emptyIndices.length === 1){
+          // jika 2 posisi di combo diisi oleh player dan satu kosong -> itu langkah pemenang
+          const others = combo.filter(i => i !== emptyIndices[0]);
+          if(boardState[others[0]] === player && boardState[others[1]] === player){
+            return emptyIndices[0];
+          }
+        }
+      }
+      return -1;
+    }
+
+    // Inisialisasi awal
+    createBoard();
+    resetRound(false);
+
+    // Expose untuk debugging (opsional) - aman untuk dihapus
+    window.__ticTacToe = {
+      getState: () => ({ boardState: [...boardState], currentPlayer, isGameActive, scores }),
+      resetRound,
+      newGame
+    };
+
+  })();
+  </script>
+</body>
+</html>

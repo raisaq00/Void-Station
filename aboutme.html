@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Void Cracker - About Me</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+<style>
+body {
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    color:#f0f0f0;
+    overflow-x:hidden;
+    background: linear-gradient(270deg, #2b2d42, #8d86c9, #2b2d42);
+    background-size: 600% 600%;
+    animation: gradientMove 15s ease infinite;
+}
+
+@keyframes gradientMove {
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+/* Navbar */
+nav{
+    background: linear-gradient(90deg, #2b2d42, #8d86c9);
+    padding:10px 20px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.5);
+}
+.navbar-brand {
+    font-weight:700;
+    color:#fff;
+    cursor:pointer;
+}
+
+/* Sidebar */
+.sidebar-btn {
+    display:block;
+    width:100%;
+    margin-bottom:12px;
+    padding:12px 16px;
+    border-radius:12px;
+    font-weight:600;
+    color:#f0f0f0;
+    background: rgba(0,0,0,0.4);
+    border:1px solid #00ffe0;
+    transition:0.3s;
+    text-align:left;
+    text-decoration:none; /* hapus underline */
+}
+.sidebar-btn:hover, .sidebar-btn.active{
+    color:#121212;
+    background: #00ffe0;
+    box-shadow:0 0 10px #00ffe0;
+}
+
+/* Cards */
+.card{
+    background: rgba(0,0,0,0.6);
+    border:1px solid #00ffe0;
+    border-radius:16px;
+    color:#f0f0f0;
+    transition: all 0.3s ease;
+}
+.card:hover{
+    transform:scale(1.03);
+    box-shadow:0 0 10px #00ffe0;
+}
+
+/* Text */
+h5 { color:#00ffe0; margin-bottom:15px;}
+p { color:#f0f0f0; line-height:1.6; }
+
+/* Cursor Star Trail */
+.trail-star {
+    position: fixed;
+    width: 14px;
+    height: 14px;
+    background: yellow;
+    clip-path: polygon(
+        50% 0%, 61% 35%, 98% 35%, 
+        68% 57%, 79% 91%, 50% 70%, 
+        21% 91%, 32% 57%, 2% 35%, 
+        39% 35%
+    );
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%) scale(1);
+    animation: fadeStar 0.6s forwards;
+}
+@keyframes fadeStar {
+    0% {opacity:1; transform: translate(-50%, -50%) scale(1);}
+    100% {opacity:0; transform: translate(-50%, -50%) scale(0);}
+}
+</style>
+</head>
+<body>
+
+<script>
+// Warp function + click sound
+function warpTo(url){
+    new Audio('../sfx/click3.mp3').play();
+    setTimeout(()=>window.location.href=url,300);
+}
+
+// Cursor star trail
+document.addEventListener("mousemove", e => {
+    const star = document.createElement("div");
+    star.className = "trail-star";
+    star.style.left = e.clientX + "px";
+    star.style.top = e.clientY + "px";
+    document.body.appendChild(star);
+    setTimeout(() => star.remove(), 600);
+});
+</script>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg">
+    <span class="navbar-brand" onclick="warpTo('Home.html')"><img src="images/channels4_profile.jpg" width="30" height="30" class="rounded-circle border border-info me-2"></i> VOID CRACKER</span>
+</nav>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <a class="sidebar-btn" onclick="warpTo('Home.html')"><i class="bi bi-house-door-fill"></i> Home</a>
+            <a class="sidebar-btn" onclick="warpTo('Game/homegame.html')"><i class="bi bi-controller"></i> Game</a>
+            <a class="sidebar-btn" onclick="warpTo('sosmed.html')"><i class="bi bi-phone"></i> Sosial Media</a>
+            <a class="sidebar-btn active"><i class="bi bi-person"></i> Tentang Saya</a>
+        </div>
+
+        <!-- Content -->
+        <div class="col-md-9">
+            <div class="card p-4">
+                <h5>About Me</h5>
+                <p>Halo! Saya Void Cracker, seorang developer dan kreator konten yang fokus membuat game HTML, desain web, dan pengalaman interaktif. Tujuan saya adalah membuat projek-projek futuristik, elegan, dan nyaman dipandang.</p>
+                <p>Saya suka bereksperimen dengan tema modern, animasi halus, dan efek visual yang menyenangkan untuk mata agar pengalaman pengguna maksimal.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

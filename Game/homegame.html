@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Void Cracker | Game Station</title>
+
+<!-- Bootstrap & Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+<style>
+  /* ========== BASE ========== */
+  :root{
+    --bg:#03040a;
+    --panel:#06131d;
+    --neon:#00eaff;
+    --neon-dim: rgba(0,234,255,0.14);
+    --muted:#9fb6cc;
+  }
+  html,body{height:100%;margin:0;background:var(--bg);color:#dfeeff;font-family:Inter, "Segoe UI", system-ui, sans-serif;overflow-x:hidden;cursor:none;}
+
+  /* ========== NAVBAR ========== */
+  .navbar{
+    background: rgba(0,6,12,0.6);
+    border-bottom: 1px solid rgba(0,234,255,0.06);
+    backdrop-filter: blur(6px);
+  }
+  .brand{
+    color:var(--neon);
+    font-weight:700;
+    text-shadow:0 0 8px rgba(0,234,255,0.08);
+  }
+
+  /* ========== LAYOUT ========== */
+  .layout{display:flex;min-height:calc(100vh - 64px);}
+  .sidebar{
+    width:260px;
+    padding:22px;
+    background:linear-gradient(180deg, rgba(2,8,15,0.6), rgba(2,6,10,0.4));
+    border-right:1px solid rgba(0,234,255,0.04);
+  }
+  .sidebar .nav-link{
+    color:var(--muted);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    transition:all .18s ease;
+    display:flex;align-items:center;gap:10px;
+  }
+  .sidebar .nav-link:hover{ background: rgba(0,234,255,0.04); color:var(--neon); transform:translateX(6px); box-shadow:0 6px 18px rgba(0,234,255,0.04) inset;}
+  .sidebar .nav-link.active{ background: linear-gradient(90deg, rgba(0,234,255,0.06), rgba(0,234,255,0.03)); color:var(--neon); font-weight:600; box-shadow:0 0 18px var(--neon-dim) inset;}
+
+  .content { flex:1; padding:28px; }
+
+  /* ========== HEADER ========== */
+  h3.section-title{ color:var(--neon); margin-bottom:18px; letter-spacing:0.6px; border-bottom:1px solid rgba(0,234,255,0.06); padding-bottom:8px; width:fit-content; }
+
+  /* ========== GAME CARDS ========== */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; align-items:start; }
+  .game-card{
+    background:var(--panel);
+    border:1px solid rgba(0,234,255,0.06);
+    border-radius:16px;
+    padding:16px;
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .game-card::after{
+    content:"";
+    position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(120deg, transparent 0%, transparent 60%, rgba(0,234,255,0.03) 80%);
+    mix-blend-mode:overlay;
+  }
+  .game-card:hover{
+    transform: translateY(-8px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 30px rgba(0,234,255,0.06);
+    border-color: rgba(0,234,255,0.18);
+  }
+  .game-thumb{
+    height:150px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;font-size:46px;color:var(--neon);
+    background:radial-gradient(circle at 10% 10%, rgba(0,234,255,0.06), rgba(0,0,0,0.12) 40%), linear-gradient(180deg,#002b3a,#00141b);
+    box-shadow: inset 0 -10px 40px rgba(0,0,0,0.45);
+  }
+  .game-title{margin-top:12px;color:#dff7ff;font-weight:700;}
+  .game-desc{color:var(--muted);font-size:13px;margin:6px 0 12px;}
+
+  .btn-play{
+    width:100%; padding:10px 12px; border-radius:999px; border:0; background:linear-gradient(90deg,#008fb2,#00d9ff);
+    color:#001821; font-weight:700; box-shadow:0 8px 20px rgba(0,217,255,0.08);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-play:hover{ transform:translateY(-4px); box-shadow:0 18px 36px rgba(0,217,255,0.16); }
+
+  /* ========== PARTICLES ========== */
+  #particles{ position:fixed; inset:0; pointer-events:none; z-index:2; overflow:hidden; }
+  .particle{ position:absolute; width:3px; height:3px; border-radius:50%; background:var(--neon); box-shadow:0 0 8px var(--neon); opacity:.9; transform:translateY(120vh); }
+
+  /* ========== CURSOR TRAIL ========== */
+  .trail{ position:fixed; width:14px; height:14px; border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); z-index:9999; box-shadow:0 0 12px var(--neon); background: linear-gradient(180deg,#00d9ff,#007b9d); mix-blend-mode:screen; opacity:0.95; animation:trailFade .5s forwards; }
+  @keyframes trailFade{ from{opacity:1; transform:translate(-50%,-50%) scale(1);} to{opacity:0; transform:translate(-50%,-50%) scale(0);} }
+
+  /* ========== WARP OVERLAY ========== */
+  #warp-overlay{ position:fixed; inset:0; z-index:9998; pointer-events:none; background: radial-gradient(circle at center, rgba(0,234,255,0.14), rgba(0,0,0,0.95)); transform:scale(0); opacity:0; transition:transform .55s ease, opacity .55s ease; }
+  body.warp-start #warp-overlay{ transform:scale(3); opacity:1; }
+  body.warp-end #warp-overlay{ animation:warpEnter .6s forwards; }
+  @keyframes warpEnter{ 0%{opacity:1; transform:scale(3);} 100%{opacity:0; transform:scale(0);} }
+
+  /* small screens */
+  @media (max-width:900px){
+    .sidebar{ display:none; }
+    .layout{flex-direction:column;}
+    html,body{cursor:auto;} /* allow native cursor on mobile */
+  }
+</style>
+</head>
+<body class="warp-end">
+
+  <!-- warp overlay & particles -->
+  <div id="warp-overlay"></div>
+  <div id="particles"></div>
+
+  <!-- SFX -->
+  <audio id="warp-sfx" src="" preload="auto"></audio>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg px-3">
+    <div class="container-fluid">
+      <a class="navbar-brand brand" href="#" onclick="warpTo('../Home.html')">
+        <img src="../images/channels4_profile.jpg" width="30" height="30" class="rounded-circle border border-info me-2"> Void Cracker
+      </a>
+    </div>
+  </nav>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav class="nav flex-column">
+        <a class="nav-link" onclick="warpTo('../Home.html')"><i class="bi bi-house-door-fill"></i> Home</a>
+        <a class="nav-link active"><i class="bi bi-controller"></i> Game</a>
+        <a class="nav-link" onclick="warpTo('../sosmed.html')"><i class="bi bi-phone"></i> Sosial Media</a>
+        <a class="nav-link" onclick="warpTo('../aboutme.html')"><i class="bi bi-person"></i> Tentang Saya</a>
+      </nav>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+      <h3 class="section-title">Void Game Station 🎮</h3>
+
+      <div class="grid">
+        <!-- Tic Tac Toe -->
+        <div class="game-card">
+          <div class="game-thumb"><i class="bi bi-grid-3x3-gap-fill"></i></div>
+          <div class="game-title">Tic Tac Toe</div>
+          <div class="game-desc">Duel cepat 2 pemain. Permainan klasik sederhana.</div>
+          <button class="btn-play" onclick="warpTo('tictactoe.html')">Mainkan</button>
+        </div>
+
+        <!-- Chess -->
+        <div class="game-card">
+          <div class="game-thumb"><i class="bi bi-people-fill"></i></div>
+          <div class="game-title">Catur</div>
+          <div class="game-desc">Papan strategi klasik. Uji taktikmu.</div>
+          <button class="btn-play" onclick="warpTo('Catur.html')">Mainkan</button>
+        </div>
+
+        <!-- Placeholder / Add more -->
+        <div class="game-card">
+          <div class="game-thumb"><i class="bi bi-controller"></i></div>
+          <div class="game-title">Snake</div>
+          <div class="game-desc">Main kan snake cari skor tertinggimu.</div>
+          <button class="btn-play" onclick="warpTo('snake.html')">Mainkan</button>
+        </div>
+        <div class="game-card">
+          <div class="game-thumb"><i class="bi bi-feather"></i></div>
+          <div class="game-title">Flappy Bird</div>
+          <div class="game-desc">Terbang dan dapat kan Score</div>
+          <button class="btn-play" onclick="warpTo('flappy.html')">Mainkan</button>
+        </div>
+        <div class="game-card">
+          <div class="game-thumb"><i class="bi bi-people-fill"></i></div>
+          <div class="game-title">Pong Game</div>
+          <div class="game-desc">1 vs 1, Kalah kan teman mu</div>
+          <button class="btn-play" onclick="warpTo('pong.html')">Mainkan</button>
+        </div>
+        <div class="game-card">
+          <div class="game-thumb"><i class="bi bi-controller"></i></div>
+          <div class="game-title">Coming Soon</div>
+          <div class="game-desc">Tambah game baru di sini. Klik untuk pesan.</div>
+          <button class="btn-play" onclick="alert('Game belum ditambahkan ✦')">Info</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script>
+/* ---------------- PARTICLES ---------------- */
+function spawnParticle(){
+  const p = document.createElement('div');
+  p.className = 'particle';
+  // spawn around bottom area randomly
+  p.style.left = Math.random() * window.innerWidth + 'px';
+  p.style.top = (window.innerHeight + 10) + 'px';
+  const size = 1 + Math.random() * 3;
+  p.style.width = size + 'px';
+  p.style.height = size + 'px';
+  const dur = 600 + Math.random() * 900;
+  p.style.transition = `transform ${dur}ms linear, opacity ${dur}ms linear`;
+  document.getElementById('particles').appendChild(p);
+
+  // move upward and random x shift
+  const xShift = (Math.random() - 0.5) * 200;
+  requestAnimationFrame(()=>{
+    p.style.transform = `translate(${xShift}px, -${window.innerHeight + 40}px)`;
+    p.style.opacity = 0;
+  });
+  setTimeout(()=> p.remove(), dur + 200);
+}
+let particleTimer = setInterval(spawnParticle, 60);
+
+/* ---------------- CURSOR TRAIL ---------------- */
+document.addEventListener('mousemove', (e) => {
+  // don't run on small screens
+  if(window.innerWidth < 900) return;
+  const t = document.createElement('div');
+  t.className = 'trail';
+  t.style.left = e.clientX + 'px';
+  t.style.top = e.clientY + 'px';
+  document.body.appendChild(t);
+  setTimeout(()=> t.remove(), 500);
+});
+
+/* ---------------- WARP TRANSITION + SFX ---------------- */
+function warpTo(url){
+  const sfx = document.getElementById('warp-sfx');
+  if(sfx){ sfx.volume = 0.45; try{ sfx.currentTime = 0; }catch(e){} sfx.play().catch(()=>{}); }
+  document.body.classList.add('warp-start');
+  // short delay for warp visual & sound, then navigate
+  setTimeout(()=> { window.location.href = url; }, 480);
+}
+
+// run entrance warp animation on load
+window.addEventListener('load', ()=> {
+  document.body.classList.add('warp-end');
+});
+
+/* optional: stop particles when leaving to reduce CPU briefly */
+window.addEventListener('beforeunload', ()=> {
+  clearInterval(particleTimer);
+});
+</script>
+
+</body>
+</html>
